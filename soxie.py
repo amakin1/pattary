@@ -11,6 +11,8 @@ import re
 from bs4 import BeautifulSoup
 shop_list = []
 shop = {}
+shop_pd_dict = {}
+shop_pd_dict_all = {}
 key_a = 'sooxie.com'
 url_shop_list_entry = 'https://sooxie.com/list.aspx'
 pt_soxie_header = {
@@ -117,7 +119,8 @@ def pt_get_shop_product(url):
         print 'totalpage %d'%totalpage
     pro_list = soup.select('.probox .pro')
     for x in xrange(len(pro_list)):
-        print pro_list[x].select_one('.pname').a.get('href')
+        pro = pro_list[x].select_one('.pname').a.get('href')
+        print pro
         n+=1
     '''get more pro'''
     if totalpage > 1:
@@ -135,10 +138,45 @@ def pt_get_shop_product(url):
             soup = BeautifulSoup(resr,'html.parser')
             pro_list = soup.select('.pro')
             for y in xrange(len(pro_list)):
-                print pro_list[y].select_one('.pname').a.get('href')
+                pro = pro_list[y].select_one('.pname').a.get('href')
+                print pro
                 n+=1
     print '=== shop %s total product num %d ==='%(shop_name,n)
-        
+    
+def pt_get_prod_detail(url,):
+    print '=== get prod detail ==='
+    shop_name = url.split('//')[1].split('.')[0]
+    pd_id = url.split('/')[3].split('.')[0]
+    req = urllib2.Request(url,headers=pt_soxie_header)
+    res = opener.open(req)
+    resr = res.read()
+    soup = BeautifulSoup(resr,'html.parser')
+    pd_info = soup.select('.proinfo .infobox_h .infoline')
+    print len(pd_info)
+    pd_name = pd_info[0].strip
+    pd_num = pd_info[1].strong.get_text()
+    pd_price = pd_info[2].em.get_text()
+    pd_hot_index = pd_info[3].select('strong')[0].get_text()
+    pd_update_time = pd_info[3].select('strong')[1].font.get_text()
+    pd_size = pd_info[4].select_one('#size').select('li')
+    pd_color = pd_info[5].select_one('#color').select('li')
+    size_list = []
+    color_list = []
+    pd_dict = {}
+    for x in xrange(len(pd_size)):
+        size_list.append(pd_size[x].get_text())
+    for x in xrange(len(pd_color)):
+        color_list.append(pd_color[x].get_text())
+    pd_dict['pd_name'] = pd_name
+    pd_dict['pd_num'] = pd_num
+    pd_dict['pd_price'] = pd_price
+    pd_dict['pd_hot_index'] = pd_hot_index
+    pd_dict['pd_update_time'] = pd_update_time
+    pd_dict['pd_size'] = size_list
+    pd_dict['pd_color'] = color_list
+    for k,v in pd_dict.iteritems():
+        print k,v
+    add2ddict(shop_pd_dict,shop_name,pd_id,pd_dict)
 def main():
     print '---main func---'
     pt_build_https_opener()
@@ -151,6 +189,7 @@ def main():
         }
     #pt_get_shop_list_page(url, shop_list, data_dict)
     pt_get_shop_product(url)
+    pt_get_prod_detail('https://hengjia.sooxie.com/288811.aspx')
     pass
 
 if __name__ == "__main__":
