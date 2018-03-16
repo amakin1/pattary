@@ -482,8 +482,12 @@ def main():
                                     try:
                                         pt_get_prod_detail(id,len_shop_pd,x) #gen per pd detail
                                         nnn+=1
-                                        if nnn >= 4:
+                                        if nnn%4 == 0:
                                             time.sleep(0.5)
+                                        elif nnn%9 == 0:
+                                            time.sleep(1.5)
+                                        elif nnn >= 40:
+                                            time.sleep(5.5)
                                             nnn = 0
                                     except:
                                         time.sleep(5)
